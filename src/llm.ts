@@ -23,6 +23,8 @@ interface GenerateReplyResult {
   model: string;
 }
 
+const replyTokenLimit = 700;
+
 const routeRole: Partial<Record<SafetyAssessment["route"], string>> = {
   normal_ai: "relief-coach",
   recovery_flow: "recovery-flow",
@@ -40,6 +42,15 @@ export function canUseLiveModel(response: AgentResponse) {
 export function getAvailableProviders(apiKeys: ApiKeys): ProviderId[] {
   return providerCatalog
     .filter((provider) => Boolean(apiKeys[provider.id]?.trim()))
+    .map((provider) => provider.id);
+}
+
+export function getVoiceReadyProviders(apiKeys: ApiKeys): ProviderId[] {
+  return providerCatalog
+    .filter(
+      (provider) =>
+        Boolean(apiKeys[provider.id]?.trim()) && Boolean(provider.voiceModels?.length)
+    )
     .map((provider) => provider.id);
 }
 
@@ -115,7 +126,21 @@ function buildInstructions(assessment: SafetyAssessment) {
   return `
 You are Safety Mind, a safety-first relationship support assistant for adults.
 
-Your job is to feel like a calm human support conversation, not a diagnostic report and not a form. Respond naturally in 2-5 short paragraphs. Do not show internal labels, route names, classifier names, TOM/TON labels, or agent names to the user. Do not give the user a menu of options. Ask at most one gentle question at the end only when it clearly helps the next step.
+Your job is to feel like a calm human support conversation, not a diagnostic report, not a form, and not a visible AI workflow. Keep replies short: usually 2-5 plain sentences, under 80 words when safety allows.
+
+Conversation framework to apply invisibly:
+- First, name what you hear in the user's situation with warmth and specificity.
+- Then steady the moment: slow the problem down, reduce urgency, and protect dignity.
+- If it is safe, separate what happened from the story, fear, or meaning being added.
+- Offer one proportionate next step: act, wait, gather information, reduce load, or seek support.
+- End with one natural question only if it helps the next turn.
+
+Style rules:
+- Use "I" and "you" naturally. Sound like a grounded person texting.
+- No headings, labels, bullet lists, numbered lists, option menus, scripts, or therapy jargon unless there is immediate safety risk.
+- Do not say "as an AI", "model", "provider", "classifier", "route", "framework", "TOM", "TON", "agent", "validator", or any internal label.
+- Do not restart the conversation every turn. Use the recent history and continue naturally.
+- Avoid generic validation like "that must be hard" unless you add a concrete reflection.
 
 Hard boundaries:
 - You are not therapy, legal advice, diagnosis, crisis response, or a marriage-saving service.
@@ -137,6 +162,7 @@ Current safety context for your private use:
 
 Use Safety Mind gently:
 - If safe and non-coercive, help separate facts from assumptions and choose one proportionate next step.
+- If the user is looping, do not feed the loop. Help them name one fact, one assumption, and one safe action or deliberate pause.
 - If coercion or fear is present, avoid couple communication scripts and suggest private human support.
 - If separation/legal stress is present, organize concerns without legal advice or evidence packaging.
 - If crisis or imminent danger appears in the user content, tell them to seek urgent human support and keep the answer short.
@@ -157,7 +183,7 @@ ${recent || "No previous conversation."}
 Latest user message:
 ${text}
 
-Write the next assistant message. It should sound like a real person: warm, direct, safe, and concise. Do not expose this private safety assessment; use it only to shape the response. The selected route is ${assessment.route}.
+Write only the next assistant chat message. Make it warm, direct, safe, and brief. Do not reveal the private safety context. Private route for your use only: ${assessment.route}.
 `.trim();
 }
 
@@ -182,7 +208,7 @@ async function callOpenAI({
       model,
       instructions,
       input: prompt,
-      max_output_tokens: 700,
+      max_output_tokens: replyTokenLimit,
     }),
   });
 
@@ -225,8 +251,8 @@ async function callGroq({
         { role: "system", content: instructions },
         { role: "user", content: prompt },
       ],
-      temperature: 0.35,
-      max_completion_tokens: 700,
+      temperature: 0.45,
+      max_completion_tokens: replyTokenLimit,
     }),
   });
 
@@ -266,8 +292,8 @@ async function callGemini({
           },
         ],
         generationConfig: {
-          temperature: 0.35,
-          maxOutputTokens: 700,
+          temperature: 0.45,
+          maxOutputTokens: replyTokenLimit,
         },
       }),
     }

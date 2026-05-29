@@ -32,6 +32,20 @@ export const providerCatalog: ProviderOption[] = [
         stability: "stable",
       },
     ],
+    voiceModels: [
+      {
+        id: "gpt-realtime",
+        label: "OpenAI Realtime",
+        bestFor: "Low-latency voice conversation",
+        stability: "specialized",
+      },
+      {
+        id: "gpt-4o-transcribe",
+        label: "GPT-4o Transcribe",
+        bestFor: "Speech-to-text input",
+        stability: "specialized",
+      },
+    ],
   },
   {
     id: "groq",
@@ -43,6 +57,12 @@ export const providerCatalog: ProviderOption[] = [
         id: "openai/gpt-oss-120b",
         label: "GPT-OSS 120B",
         bestFor: "Fast reasoning, tool use, JSON mode, and validator redundancy",
+        stability: "stable",
+      },
+      {
+        id: "openai/gpt-oss-20b",
+        label: "GPT-OSS 20B",
+        bestFor: "High-speed reasoning, drafting, and lower-cost agent responses",
         stability: "stable",
       },
       {
@@ -58,10 +78,78 @@ export const providerCatalog: ProviderOption[] = [
         stability: "stable",
       },
       {
+        id: "allam-2-7b",
+        label: "ALLAM 2 7B",
+        bestFor: "Arabic and English localization, cultural wording, and lightweight review",
+        stability: "stable",
+      },
+      {
+        id: "meta-llama/llama-4-scout-17b-16e-instruct",
+        label: "Llama 4 Scout 17B 16E",
+        bestFor: "Preview multimodal reasoning and broad-context evaluations",
+        stability: "preview",
+      },
+      {
+        id: "qwen/qwen3-32b",
+        label: "Qwen3 32B",
+        bestFor: "Preview reasoning, multilingual validation, and structured checks",
+        stability: "preview",
+      },
+      {
         id: "groq/compound",
         label: "Groq Compound",
         bestFor: "Tool-using support tasks outside protected health data",
         stability: "specialized",
+      },
+      {
+        id: "groq/compound-mini",
+        label: "Groq Compound Mini",
+        bestFor: "Lower-latency tool-using support tasks outside protected health data",
+        stability: "specialized",
+      },
+      {
+        id: "openai/gpt-oss-safeguard-20b",
+        label: "GPT-OSS Safeguard 20B",
+        bestFor: "Safety validation, policy checks, and high-risk content review",
+        stability: "preview",
+      },
+      {
+        id: "meta-llama/llama-prompt-guard-2-86m",
+        label: "Llama Prompt Guard 2 86M",
+        bestFor: "Prompt-injection and jailbreak screening",
+        stability: "preview",
+      },
+      {
+        id: "meta-llama/llama-prompt-guard-2-22m",
+        label: "Llama Prompt Guard 2 22M",
+        bestFor: "Fast prompt-injection prechecks",
+        stability: "preview",
+      },
+    ],
+    voiceModels: [
+      {
+        id: "whisper-large-v3",
+        label: "Whisper Large V3",
+        bestFor: "High-accuracy multilingual speech-to-text",
+        stability: "stable",
+      },
+      {
+        id: "whisper-large-v3-turbo",
+        label: "Whisper Large V3 Turbo",
+        bestFor: "Fast multilingual speech-to-text",
+        stability: "specialized",
+      },
+      {
+        id: "canopylabs/orpheus-arabic-saudi",
+        label: "Orpheus Arabic Saudi",
+        bestFor: "Saudi Arabic text-to-speech",
+        stability: "specialized",
+      },
+      {
+        id: "canopylabs/orpheus-v1-english",
+        label: "Orpheus V1 English",
+        bestFor: "English text-to-speech",
+        stability: "preview",
       },
     ],
   },
@@ -112,6 +200,20 @@ export const providerCatalog: ProviderOption[] = [
         label: "Gemini 2.5 Flash-Lite",
         bestFor: "High-throughput simple checks",
         stability: "stable",
+      },
+    ],
+    voiceModels: [
+      {
+        id: "gemini-2.5-flash-native-audio-preview-12-2025",
+        label: "Gemini Native Audio",
+        bestFor: "Live voice interaction through Gemini Live API",
+        stability: "preview",
+      },
+      {
+        id: "gemini-2.5-flash-preview-tts",
+        label: "Gemini Flash TTS",
+        bestFor: "Text-to-speech generation",
+        stability: "preview",
       },
     ],
   },

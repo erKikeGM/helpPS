@@ -12,8 +12,8 @@ import {
   KeyRound,
   Lock,
   MessageSquareText,
+  Mic,
   Moon,
-  Network,
   PanelLeft,
   RotateCcw,
   Send,
@@ -22,10 +22,9 @@ import {
   ShieldAlert,
   Sparkles,
   Sun,
-  UsersRound,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   agentRoles,
   defaultStressors,
@@ -39,7 +38,12 @@ import {
   scoreStressor,
   summarizeLoad,
 } from "./engine";
-import { canUseLiveModel, generateLiveReply, getAvailableProviders } from "./llm";
+import {
+  canUseLiveModel,
+  generateLiveReply,
+  getAvailableProviders,
+  getVoiceReadyProviders,
+} from "./llm";
 import type {
   AgentResponse,
   ApiKeys,
@@ -56,26 +60,18 @@ type TabId = "chat" | "load" | "admin" | "evidence";
 type Theme = "light" | "dark";
 
 const routeLabels: Record<RouteAction, string> = {
-  normal_ai: "Normal AI",
-  recovery_flow: "Recovery Flow",
+  normal_ai: "Conversation support",
+  recovery_flow: "Recovery flow",
   education: "Education",
   low_burden_mitigation: "Low-burden mitigation",
   human_support: "Human support",
   resource_directory: "Resource directory",
   block_refuse: "Refusal",
-  quick_exit_prompt: "Quick-exit prompt",
+  quick_exit_prompt: "Privacy prompt",
   crisis_disclaimer: "Crisis disclaimer",
-  pathway_4: "Pathway 4",
-  pathway_6: "Pathway 6",
+  pathway_4: "Protection support",
+  pathway_6: "Separation support",
   admin_review: "Admin review",
-};
-
-const routeTone: Partial<Record<RouteAction, string>> = {
-  resource_directory: "critical",
-  pathway_4: "critical",
-  pathway_6: "caution",
-  block_refuse: "caution",
-  recovery_flow: "steady",
 };
 
 function loadJsonState<T>(key: string, fallback: T): T {
@@ -99,6 +95,7 @@ function useStoredState<T>(key: string, fallback: T) {
 
 const providerById = Object.fromEntries(providerCatalog.map((provider) => [provider.id, provider]));
 const localProviderLabel = "Local guardrail";
+const providerPriorityFallback: ProviderId[] = ["openai", "gemini", "groq"];
 
 function hasProviderKey(apiKeys: ApiKeys, provider: ProviderId) {
   return Boolean(apiKeys[provider]?.trim());
@@ -106,6 +103,129 @@ function hasProviderKey(apiKeys: ApiKeys, provider: ProviderId) {
 
 function providerLabel(provider: TraceStep["provider"]) {
   return provider === "local" ? localProviderLabel : providerById[provider].label;
+}
+
+const providerModelByRole: Record<ProviderId, Record<string, string>> = {
+  openai: {
+    "safety-classifier": "gpt-5.4-nano",
+    "safety-mind-classifier": "gpt-5.4-mini",
+    router: "gpt-5.4-mini",
+    "one-side-layer": "gpt-5.4-nano",
+    "relief-coach": "gpt-5.4-mini",
+    "recovery-flow": "gpt-5.5",
+    "load-audit": "gpt-5.4-mini",
+    "content-delivery": "gpt-5.4",
+    "safety-planner": "gpt-5.5",
+    "crisis-handoff": "gpt-5.4-nano",
+    "privacy-compliance": "gpt-5.5",
+    "couple-mediation": "gpt-5.5",
+  },
+  groq: {
+    "safety-classifier": "openai/gpt-oss-safeguard-20b",
+    "safety-mind-classifier": "openai/gpt-oss-20b",
+    router: "openai/gpt-oss-120b",
+    "one-side-layer": "openai/gpt-oss-safeguard-20b",
+    "relief-coach": "llama-3.3-70b-versatile",
+    "recovery-flow": "openai/gpt-oss-120b",
+    "load-audit": "openai/gpt-oss-20b",
+    "content-delivery": "llama-3.3-70b-versatile",
+    "safety-planner": "openai/gpt-oss-120b",
+    "crisis-handoff": "openai/gpt-oss-safeguard-20b",
+    "privacy-compliance": "openai/gpt-oss-120b",
+    "couple-mediation": "openai/gpt-oss-120b",
+  },
+  gemini: {
+    "safety-classifier": "gemini-3.1-flash-lite",
+    "safety-mind-classifier": "gemini-2.5-flash",
+    router: "gemini-3.5-flash",
+    "one-side-layer": "gemini-3.1-flash-lite",
+    "relief-coach": "gemini-2.5-flash",
+    "recovery-flow": "gemini-2.5-pro",
+    "load-audit": "gemini-2.5-flash",
+    "content-delivery": "gemini-2.5-pro",
+    "safety-planner": "gemini-3.1-pro-preview",
+    "crisis-handoff": "gemini-3.1-flash-lite",
+    "privacy-compliance": "gemini-2.5-pro",
+    "couple-mediation": "gemini-3.1-pro-preview",
+  },
+};
+
+const providerValidatorModelByRole: Partial<Record<ProviderId, Record<string, string>>> = {
+  groq: {
+    "safety-classifier": "llama-3.3-70b-versatile",
+    "safety-mind-classifier": "qwen/qwen3-32b",
+    router: "openai/gpt-oss-20b",
+    "one-side-layer": "meta-llama/llama-prompt-guard-2-86m",
+    "relief-coach": "openai/gpt-oss-20b",
+    "recovery-flow": "llama-3.3-70b-versatile",
+    "load-audit": "qwen/qwen3-32b",
+    "content-delivery": "allam-2-7b",
+    "safety-planner": "openai/gpt-oss-safeguard-20b",
+    "crisis-handoff": "llama-3.1-8b-instant",
+    "privacy-compliance": "openai/gpt-oss-safeguard-20b",
+    "couple-mediation": "openai/gpt-oss-safeguard-20b",
+  },
+};
+
+const bestProviderByRole: Record<string, ProviderId[]> = {
+  "safety-classifier": ["openai", "groq", "gemini"],
+  "safety-mind-classifier": ["gemini", "openai", "groq"],
+  router: ["openai", "groq", "gemini"],
+  "one-side-layer": ["groq", "openai", "gemini"],
+  "relief-coach": ["openai", "gemini", "groq"],
+  "recovery-flow": ["openai", "gemini", "groq"],
+  "load-audit": ["gemini", "openai", "groq"],
+  "content-delivery": ["groq", "gemini", "openai"],
+  "safety-planner": ["openai", "gemini", "groq"],
+  "crisis-handoff": ["groq", "openai", "gemini"],
+  "privacy-compliance": ["gemini", "openai", "groq"],
+  "couple-mediation": ["openai", "gemini", "groq"],
+};
+
+function providerDefaultModel(provider: ProviderId) {
+  return providerById[provider].models[0]?.id ?? "";
+}
+
+function modelForRole(provider: ProviderId, roleId: string) {
+  return providerModelByRole[provider][roleId] ?? providerDefaultModel(provider);
+}
+
+function validatorModelForRole(provider: ProviderId, roleId: string) {
+  return providerValidatorModelByRole[provider]?.[roleId] ?? modelForRole(provider, roleId);
+}
+
+function chooseBestProvider(roleId: string, availableProviders: ProviderId[]) {
+  const priority = bestProviderByRole[roleId] ?? providerPriorityFallback;
+  return priority.find((provider) => availableProviders.includes(provider)) ?? availableProviders[0] ?? "openai";
+}
+
+function chooseValidatorProvider(primaryProvider: ProviderId, roleId: string, availableProviders: ProviderId[]) {
+  const priority = bestProviderByRole[roleId] ?? providerPriorityFallback;
+  return (
+    priority.find((provider) => provider !== primaryProvider && availableProviders.includes(provider)) ??
+    availableProviders.find((provider) => provider !== primaryProvider) ??
+    primaryProvider
+  );
+}
+
+function buildAutoConfig(availableProviders: ProviderId[], singleProvider?: ProviderId): AppConfig {
+  return Object.fromEntries(
+    agentRoles.map((role) => {
+      const provider = singleProvider ?? chooseBestProvider(role.id, availableProviders);
+      const validatorProvider = singleProvider ?? chooseValidatorProvider(provider, role.id, availableProviders);
+
+      return [
+        role.id,
+        {
+          provider,
+          model: modelForRole(provider, role.id),
+          validatorProvider,
+          validatorModel: validatorModelForRole(validatorProvider, role.id),
+          enabled: role.phase !== "Phase 2 gated",
+        },
+      ];
+    })
+  ) as AppConfig;
 }
 
 function constrainToAvailableProviders(response: AgentResponse, apiKeys: ApiKeys): AgentResponse {
@@ -202,6 +322,7 @@ function App() {
   ]);
 
   const latestResponse = [...messages].reverse().find((message) => message.response)?.response;
+  const voiceReadyProviders = getVoiceReadyProviders(apiKeys);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -246,7 +367,7 @@ function App() {
       {
         id: pendingId,
         from: "assistant",
-        text: "I’m checking safety first, then I’ll answer you directly.",
+        text: "I’m taking this in.",
         response: localResponse,
         pending: true,
       },
@@ -302,8 +423,7 @@ function App() {
       {
         id: "welcome-reset",
         from: "assistant",
-        text:
-          "The conversation has been cleared locally. You can start again with safety screening first.",
+        text: "We can start fresh. Tell me what is happening now, in your own words.",
       },
     ]);
   }
@@ -370,6 +490,7 @@ function App() {
             resetPrototype={resetPrototype}
             latestResponse={latestResponse}
             isThinking={isThinking}
+            voiceReady={voiceReadyProviders.length > 0}
           />
         )}
         {activeTab === "load" && (
@@ -454,8 +575,8 @@ function TopBar({
   return (
     <header className="topbar">
       <div>
-        <p className="eyebrow">Private support mode</p>
-        <h2>Talk it through safely</h2>
+        <p className="eyebrow">Private support</p>
+        <h2>Talk it through</h2>
       </div>
       <div className="topbar-actions">
         <button
@@ -470,21 +591,9 @@ function TopBar({
         <div className="topbar-metrics" aria-label="Current safety state">
           <MetricPill
             icon={<ShieldAlert size={16} />}
-            label="Safety check"
-            value="Always on"
+            label="Status"
+            value={route ? userModeLabel(route) : "Protected"}
             tone="locked"
-          />
-          <MetricPill
-            icon={<Network size={16} />}
-            label="Support mode"
-            value={route ? userModeLabel(route) : "Ready"}
-            tone={route ? routeTone[route] : undefined}
-          />
-          <MetricPill
-            icon={<UsersRound size={16} />}
-            label="Sharing"
-            value={latestResponse?.assessment.coupleFeaturesAllowed === false ? "Private" : "Individual"}
-            tone={latestResponse?.assessment.coupleFeaturesAllowed === false ? "critical" : "caution"}
           />
         </div>
       </div>
@@ -493,12 +602,49 @@ function TopBar({
 }
 
 function userModeLabel(route: RouteAction) {
-  if (route === "resource_directory") return "Urgent support";
-  if (route === "pathway_4") return "Protection";
-  if (route === "pathway_6") return "Structured support";
-  if (route === "block_refuse") return "Boundary";
-  if (route === "recovery_flow") return "Reflection";
-  return "Conversation";
+  if (route === "resource_directory") return "Immediate support";
+  if (route === "pathway_4") return "Protection first";
+  if (route === "pathway_6") return "Organize the next step";
+  if (route === "block_refuse") return "Keep it safe";
+  if (route === "recovery_flow") return "Slow the loop";
+  if (route === "low_burden_mitigation") return "Reduce the pressure";
+  return "Understand the problem";
+}
+
+function safetyCheckLabel(severity: AgentResponse["assessment"]["severity"]) {
+  if (severity === "critical") return "Needs urgent help";
+  if (severity === "high") return "Protection first";
+  if (severity === "medium") return "Stay careful";
+  return "No immediate risk found";
+}
+
+function supportPaceLabel(assessment: AgentResponse["assessment"]) {
+  if (assessment.route === "resource_directory") return "Get human help now";
+  if (assessment.route === "pathway_4") return "Privacy before repair";
+  if (assessment.route === "pathway_6") return "Handle only today";
+  if (assessment.route === "recovery_flow") return "Fact, fear, next step";
+  if (assessment.route === "low_burden_mitigation") return "One small reduction";
+  return "Clarify before acting";
+}
+
+function supportNote(route: RouteAction) {
+  if (route === "resource_directory") {
+    return "I’m keeping this focused on immediate human support, not relationship analysis.";
+  }
+
+  if (route === "pathway_4") {
+    return "Couple prompts stay off while fear, control, or privacy risk may be present.";
+  }
+
+  if (route === "block_refuse") {
+    return "I can help with your wellbeing and next step, not monitoring, hacking, or evidence building.";
+  }
+
+  if (route === "pathway_6") {
+    return "I can help organize what matters today; legal decisions need qualified guidance.";
+  }
+
+  return "";
 }
 
 function MetricPill({
@@ -529,6 +675,7 @@ function ChatView({
   resetPrototype,
   latestResponse,
   isThinking,
+  voiceReady,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -537,14 +684,41 @@ function ChatView({
   resetPrototype: () => void;
   latestResponse?: AgentResponse;
   isThinking: boolean;
+  voiceReady: boolean;
 }) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    messagesEndRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "end",
+    });
+  }, [messages]);
+
   return (
     <section className="content-grid chat-grid">
       <div className="chat-panel">
         <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Safety-first chat</p>
-            <h3>What’s happening?</h3>
+          <div className="panel-heading-copy">
+            <p className="eyebrow">Relief chat</p>
+            <h3>Tell me what happened</h3>
+            <div className="chat-status-row" aria-label="Conversation safeguards">
+              <span>
+                <Shield size={14} />
+                Private
+              </span>
+              <span>
+                <HeartPulse size={14} />
+                Safety first
+              </span>
+              {voiceReady && (
+                <span>
+                  <Mic size={14} />
+                  Voice ready
+                </span>
+              )}
+            </div>
           </div>
           <button className="icon-button" type="button" onClick={resetPrototype} aria-label="Reset chat">
             <RotateCcw size={17} />
@@ -555,6 +729,7 @@ function ChatView({
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
+          <div ref={messagesEndRef} aria-hidden />
         </div>
 
         <form
@@ -571,13 +746,29 @@ function ChatView({
             id="problem-input"
             value={input}
             onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void submitMessage();
+              }
+            }}
             placeholder="Tell me what happened..."
             rows={4}
             disabled={isThinking}
           />
+          {voiceReady && (
+            <button
+              className="voice-button"
+              type="button"
+              aria-label="Voice input available"
+              title="Voice input available"
+            >
+              <Mic size={18} />
+            </button>
+          )}
           <button type="submit" disabled={isThinking}>
             {isThinking ? <Sparkles size={18} /> : <Send size={18} />}
-            {isThinking ? "Checking" : "Send"}
+            {isThinking ? "..." : "Send"}
           </button>
         </form>
       </div>
@@ -609,58 +800,43 @@ function SafetySnapshot({ response }: { response?: AgentResponse }) {
   if (!response) {
     return (
       <div className="panel-block">
-        <p className="eyebrow">Behind the scenes</p>
-        <h3>Ready when you are</h3>
+        <p className="eyebrow">Conversation guide</p>
+        <h3>Start wherever you are</h3>
         <p>
-          I check for immediate risk before replying, then keep the conversation private and focused.
+          I’ll check for immediate risk first, then help you slow the problem down into
+          what happened, what it means, and what can safely happen next.
         </p>
       </div>
     );
   }
 
+  const note = supportNote(response.assessment.route);
+
   return (
     <div className="panel-block">
-      <p className="eyebrow">Behind the scenes</p>
+      <p className="eyebrow">Conversation guide</p>
       <h3>{userModeLabel(response.assessment.route)}</h3>
       <dl className="snapshot-list">
         <div>
-          <dt>Reply source</dt>
-          <dd>
-            {response.answeredBy
-              ? response.answeredBy.mode === "live"
-                ? `${providerLabel(response.answeredBy.provider)} / ${response.answeredBy.model}`
-                : "Local fallback"
-              : "Processing"}
-          </dd>
-        </div>
-        <div>
-          <dt>Safety check</dt>
-          <dd>{response.assessment.severity === "low" ? "Clear" : response.assessment.severity}</dd>
+          <dt>Safety</dt>
+          <dd>{safetyCheckLabel(response.assessment.severity)}</dd>
         </div>
         <div>
           <dt>Focus</dt>
           <dd>{response.assessment.problemAreas[0] ?? "Relationship support"}</dd>
         </div>
         <div>
-          <dt>Mode</dt>
-          <dd>{routeLabels[response.assessment.route]}</dd>
+          <dt>Pace</dt>
+          <dd>{supportPaceLabel(response.assessment)}</dd>
         </div>
         <div>
           <dt>Privacy</dt>
-          <dd>{response.assessment.coupleFeaturesAllowed ? "Individual" : "Protected"}</dd>
+          <dd>{response.assessment.coupleFeaturesAllowed ? "Individual only" : "Protected"}</dd>
         </div>
       </dl>
-      {response.assessment.notes.length > 0 && (
+      {note && (
         <div className="note-stack">
-          {response.assessment.notes.map((note) => (
-            <p key={note}>{note}</p>
-          ))}
-        </div>
-      )}
-      {response.modelError && (
-        <div className="model-error">
-          <strong>Model connection note</strong>
-          <p>{response.modelError}</p>
+          <p>{note}</p>
         </div>
       )}
     </div>
@@ -837,6 +1013,7 @@ function AdminConsole({
   const phaseOneAgents = agentRoles.filter((role) => role.phase === "Phase 1" && role.type === "agent").length;
   const validators = agentRoles.filter((role) => role.type === "validator").length;
   const availableProviders = getAvailableProviders(apiKeys);
+  const voiceReadyProviders = getVoiceReadyProviders(apiKeys);
 
   function updateRole(roleId: string, patch: Partial<RoleConfig>) {
     setConfig((current) => {
@@ -851,7 +1028,16 @@ function AdminConsole({
     });
   }
 
+  function applyAutoConfig(singleProvider?: ProviderId) {
+    if (availableProviders.length === 0) return;
+    if (singleProvider && !availableProviders.includes(singleProvider)) return;
+
+    setConfig(buildAutoConfig(singleProvider ? [singleProvider] : availableProviders, singleProvider));
+  }
+
   function changeProvider(roleId: string, provider: ProviderId, target: "primary" | "validator") {
+    if (!availableProviders.includes(provider)) return;
+
     const firstModel = providerCatalog.find((item) => item.id === provider)?.models[0]?.id ?? "";
     if (target === "primary") {
       updateRole(roleId, { provider, model: firstModel });
@@ -876,10 +1062,17 @@ function AdminConsole({
           <MetricBlock label="System validators" value={String(validators)} />
           <MetricBlock label="Validator checks" value={String(validatorInventory.length)} />
           <MetricBlock label="Providers live" value={String(availableProviders.length)} />
+          <MetricBlock label="Voice ready" value={String(voiceReadyProviders.length)} />
         </div>
       </div>
 
       <ApiKeyPanel apiKeys={apiKeys} setApiKeys={setApiKeys} />
+
+      <AutoConfigPanel
+        availableProviders={availableProviders}
+        onBest={() => applyAutoConfig()}
+        onProvider={(provider) => applyAutoConfig(provider)}
+      />
 
       <div className="provider-band">
         {providerCatalog.map((provider) => (
@@ -892,7 +1085,13 @@ function AdminConsole({
           >
             <KeyRound size={18} />
             <strong>{provider.label}</strong>
-            <small>{hasProviderKey(apiKeys, provider.id) ? "Connected" : "Not used until key is saved"}</small>
+            <small>
+              {hasProviderKey(apiKeys, provider.id)
+                ? provider.voiceModels?.length
+                  ? "Connected · voice ready"
+                  : "Connected"
+                : "Not used until key is saved"}
+            </small>
             <span>{provider.description}</span>
           </a>
         ))}
@@ -914,6 +1113,7 @@ function AdminConsole({
                 label="Primary model"
                 provider={roleConfig.provider}
                 model={roleConfig.model}
+                availableProviders={availableProviders}
                 onProviderChange={(provider) => changeProvider(role.id, provider, "primary")}
                 onModelChange={(model) => updateRole(role.id, { model })}
               />
@@ -922,6 +1122,7 @@ function AdminConsole({
                 label="Validator model"
                 provider={roleConfig.validatorProvider}
                 model={roleConfig.validatorModel}
+                availableProviders={availableProviders}
                 onProviderChange={(provider) => changeProvider(role.id, provider, "validator")}
                 onModelChange={(validatorModel) => updateRole(role.id, { validatorModel })}
               />
@@ -938,6 +1139,74 @@ function AdminConsole({
             </article>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function AutoConfigPanel({
+  availableProviders,
+  onBest,
+  onProvider,
+}: {
+  availableProviders: ProviderId[];
+  onBest: () => void;
+  onProvider: (provider: ProviderId) => void;
+}) {
+  const hasProviders = availableProviders.length > 0;
+  const routingSummary =
+    availableProviders.length === 0
+      ? "Add at least one API key before routing agents."
+      : availableProviders.length === 1 && availableProviders[0] === "groq"
+        ? "Groq-only preset uses GPT-OSS, Llama, Safeguard, Prompt Guard, and ALLAM; Compound remains manual."
+      : availableProviders.length === 1
+        ? `${providerById[availableProviders[0]].label} will run every enabled role.`
+        : `${availableProviders.length} providers are available for cross-validation.`;
+
+  return (
+    <section className="auto-config-panel" aria-label="Automatic provider configuration">
+      <div>
+        <p className="eyebrow">Runtime routing</p>
+        <h3>Auto configuration</h3>
+        <p>
+          Uses only connected providers. With all three connected, roles are distributed by best
+          fit and validators are placed on a second provider where possible. For Groq-only,
+          validators use different Groq model families where the catalog allows it.
+        </p>
+        <strong className="routing-summary">{routingSummary}</strong>
+      </div>
+
+      <div className="auto-config-control">
+        <div className="provider-chip-row" aria-label="Connected providers">
+          {hasProviders ? (
+            availableProviders.map((provider) => (
+              <span className="provider-chip connected" key={provider}>
+                {providerById[provider].label}
+              </span>
+            ))
+          ) : (
+            <span className="provider-chip">No connected providers</span>
+          )}
+        </div>
+
+        <div className="auto-config-actions">
+          <button className="primary" type="button" onClick={onBest} disabled={!hasProviders}>
+            Best available
+          </button>
+          {providerCatalog.map((provider) => {
+            const connected = availableProviders.includes(provider.id);
+            return (
+              <button
+                type="button"
+                key={provider.id}
+                onClick={() => onProvider(provider.id)}
+                disabled={!connected}
+              >
+                {provider.label} only
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -1015,32 +1284,41 @@ function ModelPicker({
   label,
   provider,
   model,
+  availableProviders,
   onProviderChange,
   onModelChange,
 }: {
   label: string;
   provider: ProviderId;
   model: string;
+  availableProviders: ProviderId[];
   onProviderChange: (provider: ProviderId) => void;
   onModelChange: (model: string) => void;
 }) {
   const selectedProvider = providerById[provider];
+  const hasProviders = availableProviders.length > 0;
+  const providerConnected = availableProviders.includes(provider);
+  const selectionDisabled = !hasProviders || !providerConnected;
 
   return (
     <div className="model-picker">
       <label>
         <span>{label}</span>
-        <select value={provider} onChange={(event) => onProviderChange(event.target.value as ProviderId)}>
+        <select
+          value={provider}
+          onChange={(event) => onProviderChange(event.target.value as ProviderId)}
+          disabled={!hasProviders}
+        >
           {providerCatalog.map((item) => (
-            <option value={item.id} key={item.id}>
-              {item.label}
+            <option value={item.id} key={item.id} disabled={hasProviders && !availableProviders.includes(item.id)}>
+              {item.label}{hasProviders && !availableProviders.includes(item.id) ? " · no key" : ""}
             </option>
           ))}
         </select>
       </label>
       <label>
         <span>Model</span>
-        <select value={model} onChange={(event) => onModelChange(event.target.value)}>
+        <select value={model} onChange={(event) => onModelChange(event.target.value)} disabled={selectionDisabled}>
           {selectedProvider.models.map((item) => (
             <option value={item.id} key={item.id}>
               {item.label}
@@ -1080,7 +1358,16 @@ function SafetyEvidence({ latestResponse }: { latestResponse?: AgentResponse }) 
           <p className="eyebrow">Latest handoff trace</p>
           <h3>User-visible model log</h3>
           {latestResponse ? (
-            <TraceList response={latestResponse} />
+            <>
+              <p>Current support track: {routeLabels[latestResponse.assessment.route]}</p>
+              {latestResponse.modelError && (
+                <div className="model-error">
+                  <strong>Provider connection note</strong>
+                  <p>{latestResponse.modelError}</p>
+                </div>
+              )}
+              <TraceList response={latestResponse} />
+            </>
           ) : (
             <p>No message processed yet. Use the chat to generate a trace.</p>
           )}
@@ -1110,7 +1397,7 @@ function GuardrailList() {
   const items = [
     ["Safety classifier", "Every user message runs through the safety classifier simulator first."],
     ["Safety override", "Danger, coercion, self-harm, and child risk stop ordinary reframing."],
-    ["Quick exit", "The fixed Quick Exit button and Escape key move to a neutral screen."],
+    ["Privacy escape", "The Escape key moves to a neutral screen without showing relationship content."],
     ["No partner exposure", "Phase 1 keeps account mode individual; couple tools stay gated or blocked."],
     ["One side story", "Absent partner judgment is redirected toward reflection, safety, or support."],
     ["Refusals", "Surveillance, hacking, and legal evidence-package requests are refused."],

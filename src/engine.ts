@@ -318,61 +318,127 @@ function traceOutput(roleId: string, assessment: SafetyAssessment): string {
 function buildAnswer(input: string, assessment: SafetyAssessment): string[] {
   if (assessment.route === "resource_directory") {
     return [
-      "I’m concerned this may need immediate human support, so I don’t want to treat it like an ordinary relationship conversation.",
-      "If you or someone else may be in danger right now, move away if that is safe and contact local emergency support. In Saudi Arabia, you can use 999 or 911 for police or unified emergency support, 997 for ambulance, and 1919 for domestic violence reporting.",
-      "Stay with the simplest next step. You do not need to explain everything perfectly before getting help.",
+      "I’m worried this may need immediate human support. If you or someone else could be hurt right now, move away if that is safe and contact emergency help.",
+      "In Saudi Arabia, you can use 999 or 911 for police or unified emergency support, 997 for ambulance, and 1919 for domestic violence reporting. I’ll stay focused on safety until the immediate risk is lower.",
     ];
   }
 
   if (assessment.route === "pathway_4") {
     return [
-      "I’m sorry you’re carrying that. Feeling afraid to disagree, being tracked, or having money controlled should not be treated as a normal communication problem.",
-      "The safer focus is privacy and support, not trying to find the perfect words for a couple conversation. If it is safe, think about one trusted person or service you could contact without alerting your partner.",
-      "You do not have to prove everything before protecting yourself. Start with what keeps you safer today.",
+      "I’m taking the fear or control part seriously. This is not something to solve with a better message or a couple exercise.",
+      "For now, protect your privacy and bring in safe human support if you can. Who could know what is happening without it getting back to your partner?",
     ];
   }
 
   if (assessment.route === "block_refuse") {
     return [
-      "I can’t help with spying, hacking, secret monitoring, exposing a partner’s private data, or preparing a court-style evidence package.",
-      "What I can help with is sorting your own experience clearly and safely. If legal rights, custody, or danger are involved, a qualified legal or safety professional is the right next support.",
-      "If this request is coming from fear, we should focus on protection and human support rather than trying to gather proof through the platform.",
+      "I can’t help you spy, hack accounts, secretly record, expose private data, or build a court-style evidence file.",
+      "I can stay with what this is doing to you and help you choose a safe next step. What made this feel urgent today?",
     ];
   }
 
   if (assessment.route === "pathway_6") {
     return [
-      "This sounds like separation or legal stress, which can feel emotionally huge and practically messy at the same time.",
-      "I can help you organize your own needs and next questions, but I should not judge the other person, predict the outcome, or create legal evidence. The safer move is to separate the situation into a few tracks: your immediate safety, children’s wellbeing if relevant, money, housing, and proper legal advice.",
-      "For right now, choose the track that is most urgent rather than trying to solve the whole relationship at once.",
+      "That is a lot to carry, emotionally and practically. I can help you get organized without turning this into legal advice or a case file.",
+      "Start with the part that needs attention today. Is it safety, children, money, housing, or getting qualified legal guidance?",
     ];
   }
 
   if (assessment.route === "recovery_flow") {
     return [
-      "That sounds painful, especially because your mind is trying to fill in the meaning of what happened. Let’s slow it down without pretending your feelings are wrong.",
-      `The fact is: ${extractTrigger(input)}. The interpretation may be bigger than the fact right now. A steadier next step is to name one thing you know for sure, one thing you are assuming, and one calm action that would not escalate the situation.`,
-      "If you feel too activated to do that respectfully, waiting, resting, or reaching out to a trusted person may be the better action for now.",
+      `${openingLine(input, assessment)} Let’s slow it down without pretending it does not matter.`,
+      `For this moment, treat ${describeConcern(input, assessment)} as the signal, not the whole story. What do you know for sure, and what is the part your mind is filling in?`,
+    ];
+  }
+
+  if (assessment.route === "low_burden_mitigation") {
+    return [
+      "This sounds like the kind of friction that gets heavier when it keeps repeating. You do not have to solve the whole relationship from this moment.",
+      "Let’s make the next step small and respectful. What would reduce the pressure by 10% today without creating a bigger conflict?",
+    ];
+  }
+
+  if (assessment.ton === "Internal Noise") {
+    return [
+      "That sounds like it landed on how you see yourself, not only on what happened between you two.",
+      "Before accepting the harsh verdict, separate the event from the meaning your mind is adding. What happened, and what are you telling yourself it means about you?",
     ];
   }
 
   return [
-    "I hear that this is weighing on you. From what you wrote, the safest first move is to make the situation smaller and clearer rather than trying to solve everything at once.",
-    "Focus on one concrete change: the timing of the conversation, the setting, the words you use, or the support you need before speaking. I only have your side of the story, so I won’t judge your partner, but I can help you choose a next step that protects your dignity and keeps the response proportionate.",
-    "What is the smallest part of this that you want to handle first?",
+    "I’m with you. Something in this touched a need for safety, respect, closeness, or fairness.",
+    "Before deciding what to say, let’s make the picture clearer. What happened, and what did it make you afraid might be true?",
   ];
 }
 
-function extractTrigger(input: string) {
-  const trimmed = input.trim();
-  if (trimmed.length < 90) return trimmed;
-  return `${trimmed.slice(0, 86)}...`;
+function openingLine(input: string, assessment: SafetyAssessment) {
+  const text = input.toLowerCase();
+
+  if (includesAny(text, ["late reply", "has not replied", "didn't reply", "reply", "message"])) {
+    return "Silence can start to feel like rejection when your mind has to fill in the gap.";
+  }
+
+  if (includesAny(text, ["money", "card", "debt", "spending", "bank", "financial"])) {
+    return "Money pressure can turn a practical problem into fear very quickly.";
+  }
+
+  if (includesAny(text, ["cheating", "betrayal", "trust", "secret"])) {
+    return "Trust worries can get loud fast when there is uncertainty.";
+  }
+
+  if (includesAny(text, ["in-law", "family", "mother", "father"])) {
+    return "Family pressure can hit deeper than the one conversation in front of you.";
+  }
+
+  if (assessment.threatState === "Worry") {
+    return "Worry can fill the gaps very quickly when you do not have enough information.";
+  }
+
+  if (assessment.threatState === "Anxiety") {
+    return "This sounds heavy, especially if part of you is wondering whether you can handle it.";
+  }
+
+  if (assessment.modalities.includes("Physical")) {
+    return "Your body sounds activated, so we should make the next minute simpler.";
+  }
+
+  return "That sounds painful.";
+}
+
+function describeConcern(input: string, assessment: SafetyAssessment) {
+  const text = input.toLowerCase();
+
+  if (includesAny(text, ["late reply", "has not replied", "didn't reply", "reply", "message"])) {
+    return "the missing reply";
+  }
+
+  if (includesAny(text, ["money", "card", "debt", "spending", "bank", "financial"])) {
+    return "the money pressure";
+  }
+
+  if (includesAny(text, ["in-law", "family", "mother", "father"])) {
+    return "the family pressure";
+  }
+
+  if (includesAny(text, ["cheating", "betrayal", "trust", "secret"])) {
+    return "the trust concern";
+  }
+
+  if (includesAny(text, ["child", "children", "kid", "kids", "baby", "parenting"])) {
+    return "the parenting pressure";
+  }
+
+  if (assessment.problemAreas[0]) {
+    return assessment.problemAreas[0].toLowerCase();
+  }
+
+  return "what happened";
 }
 
 function buildNextSteps(assessment: SafetyAssessment): string[] {
   if (assessment.route === "resource_directory") {
     return [
-      "Keep this screen on resources or use Quick Exit if privacy is at risk.",
+      "Keep resources visible or press Escape if privacy is at risk.",
       "Contact local emergency or domestic violence support if it is safe to do so.",
       "Avoid couple communication prompts while danger may be active.",
     ];
@@ -404,16 +470,16 @@ function buildNextSteps(assessment: SafetyAssessment): string[] {
 
   if (assessment.route === "recovery_flow") {
     return [
-      "Write one fact and one assumption.",
-      "Choose one safe action or explicitly choose to wait.",
-      "If the loop repeats, add it to the load audit instead of extending the chat.",
+      "Name the fact without adding a verdict.",
+      "Name the story your mind is building around it.",
+      "Choose one safe action, or choose to wait on purpose.",
     ];
   }
 
   return [
-    "Choose one low-burden change that can be tried within 24 hours.",
-    "Use the load audit if several stressors are stacking.",
-    "Escalate to human support if distress becomes intense, persistent, or unsafe.",
+    "Choose one small change that can be tried within 24 hours.",
+    "Use the load audit if several pressures are stacking.",
+    "Bring in human support if distress becomes intense, persistent, or unsafe.",
   ];
 }
 

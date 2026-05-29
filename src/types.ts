@@ -38,6 +38,7 @@ export interface ProviderOption {
   description: string;
   sourceUrl: string;
   models: ModelOption[];
+  voiceModels?: ModelOption[];
 }
 
 export interface AgentRole {
