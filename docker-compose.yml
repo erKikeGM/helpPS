@@ -1,0 +1,11 @@
+name: helpps
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - "${APP_PORT:-5173}:80"
+    restart: unless-stopped
+

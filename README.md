@@ -58,7 +58,60 @@ Provider selection is configured in the Admin Console. A role can be assigned to
 - Lucide React icons
 - Plain CSS with a custom responsive design system
 
-## Getting Started
+## One-Click Start
+
+For non-technical users, the easiest path is the Docker launcher. It builds the production app, starts it, waits until it is ready, and opens the browser.
+
+Prerequisite:
+
+- Docker Desktop installed and running.
+
+### macOS / Linux
+
+```bash
+./run-helpps.sh
+```
+
+Useful commands:
+
+```bash
+./run-helpps.sh --port 3002   # start on a custom port
+./run-helpps.sh --no-open     # start without opening the browser
+./run-helpps.sh --logs        # show app logs
+./run-helpps.sh --stop        # stop the app
+```
+
+### Windows
+
+Use the packaged runner when available:
+
+```text
+HelpPSRunner.exe
+```
+
+If the EXE has not been generated yet, run the launcher source from the repo root:
+
+```powershell
+node .\launchers\windows\HelpPSRunner.cjs
+```
+
+Useful commands:
+
+```powershell
+HelpPSRunner.exe --port 3002
+HelpPSRunner.exe --logs
+HelpPSRunner.exe --stop
+```
+
+The browser URL is:
+
+```text
+http://localhost:5173/
+```
+
+If that port is already busy, the launcher offers or selects another available port. Scripted runs can pass `--port <number>`.
+
+## Local Development
 
 ```bash
 npm install
@@ -94,6 +147,10 @@ npm run preview  # Preview production build
 
 ```text
 BRD.md              Business requirements and safety methodology
+docker-compose.yml  One-click Docker orchestration
+docker/             Production web image and Nginx config
+run-helpps.sh       macOS/Linux one-click runner
+launchers/windows/  Windows launcher source
 src/App.tsx         Main UI and state orchestration
 src/engine.ts       Local safety classification, routing, traces, and load scoring
 src/llm.ts          Provider-gated OpenAI/Groq/Gemini runtime calls
@@ -113,6 +170,9 @@ Current checks:
 ```bash
 npm run lint
 npm run build
+bash -n run-helpps.sh
+node --check launchers/windows/HelpPSRunner.cjs
+docker compose config
 ```
 
-Both should pass before pushing changes.
+These should pass before pushing changes.
