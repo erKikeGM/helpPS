@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pains & Gains / HelpPS Paper</title>
+  <style>
+    @page {
+      size: Letter;
+      margin: 0.75in 0.78in;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      color: #111827;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 11.5pt;
+      line-height: 1.38;
+      margin: 0;
+    }
+
+    h1, h2, h3 {
+      color: #0f172a;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.15;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      border-bottom: 1px solid #d1d5db;
+      font-size: 21pt;
+      margin: 0 0 18px;
+      padding-bottom: 12px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 15pt;
+      margin: 22px 0 8px;
+    }
+
+    h3 {
+      font-size: 12.5pt;
+      margin: 16px 0 6px;
+    }
+
+    p {
+      margin: 0 0 9px;
+      text-align: justify;
+    }
+
+    blockquote {
+      border-left: 3px solid #334155;
+      color: #1f2937;
+      margin: 12px 0 14px;
+      padding: 4px 0 4px 14px;
+    }
+
+    ul, ol {
+      margin: 4px 0 12px 24px;
+      padding: 0;
+    }
+
+    li {
+      margin: 3px 0;
+    }
+
+    a {
+      color: #1d4ed8;
+      overflow-wrap: anywhere;
+      text-decoration: none;
+    }
+
+    code {
+      font-family: Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    .table-wrap {
+      margin: 12px 0 16px;
+      page-break-inside: avoid;
+    }
+
+    table {
+      border-collapse: collapse;
+      font-size: 9.4pt;
+      line-height: 1.24;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #d1d5db;
+      padding: 5px 6px;
+      text-align: left;
+      vertical-align: top;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      background: #f3f4f6;
+      color: #111827;
+      font-weight: 700;
+    }
+
+    strong {
+      color: #0f172a;
+    }
+
+    .meta {
+      color: #4b5563;
+      font-size: 9.5pt;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    @media print {
+      h2, h3 {
+        break-after: avoid;
+      }
+
+      table, blockquote {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="meta">Rendered 2026-05-31 from PUBLICATION_DRAFT.md</div>
+  <h1>Pains &amp; Gains / HelpPS: A Safety-First Architecture for AI-Supported Relationship Distress, Protection, and Practical Relief</h1>
+<h2>Abstract</h2>
+<p>AI relationship-support products are entering a category where emotional distress, coercive control, privacy, crisis risk, legal exposure, and family wellbeing can appear in the same conversation. The central design problem is not how to make an assistant more empathetic. It is how to prevent a system from giving ordinary coaching when the safer response is refusal, privacy protection, safety planning, professional support, or crisis handoff.</p>
+<p>This paper presents Pains &amp; Gains / HelpPS as a design-science prototype for safety-first AI-supported relationship distress support. The contribution is a governed operating model that treats relationship distress as a routing problem before it treats it as a conversation problem. The proposed model combines a non-clinical Safety Mind Framework, local safety prechecks, agentic role separation, one-side-of-story enforcement, load-audit logic, refusal of surveillance and evidence-package requests, crisis and coercion routing, user-visible audit traces, and phase-gated couple features.</p>
+<p>The paper synthesizes evidence from online relationship intervention trials, intimate partner violence and coercive-control literature, digital IPV safety-decision aids, technology-facilitated abuse research, mental health chatbot reviews, AI governance frameworks, and Saudi Arabia-specific regulatory and resource requirements. The evidence supports the need for safety-first digital support and careful governance. It does not yet establish that the Pains &amp; Gains / HelpPS prototype is clinically effective or production-ready. The recommended research posture is therefore cautious: treat the prototype as a safety-by-design artifact requiring red-team testing, expert review, multilingual validation, privacy hardening, and pilot outcome evaluation before deployment.</p>
+<p><strong>Keywords:</strong> relationship distress, responsible AI, intimate partner violence, coercive control, digital health, AI safety, safety-by-design, Saudi Arabia, PDPL, human-centered AI</p>
+<h2>1. Introduction</h2>
+<p>The failure mode in AI-supported relationship help is not only that the system may give bad advice. The deeper failure mode is that it may give the wrong kind of help.</p>
+<p>A user saying "I am scared to disagree" is not the same as a user saying "we keep arguing about the dishes." A user asking for help to calm down after a late reply is not the same as a user asking how to track a partner's phone. A user describing separation logistics is not asking for a court evidence package. A user in panic, self-harm risk, child risk, coercive control, or imminent danger should not be kept inside ordinary AI conversation simply because the system can generate a compassionate response.</p>
+<p>This is the design challenge behind Pains &amp; Gains / HelpPS. The project is a Phase 1 prototype for adults experiencing relational distress. It offers a private support chat, a Burnout Load Audit, an admin-configurable AI routing console, and safety evidence traces. The prototype is not therapy, legal advice, crisis response, partner surveillance, relationship scoring, or an AI companion. It is better understood as a safety-first routing and relief system.</p>
+<p>The need for this architecture is supported by three bodies of evidence. First, relationship distress is common and digital relationship interventions can help selected users, especially when interventions are structured and bounded (Doss et al., 2016; Nowlan et al., 2017). Second, intimate partner violence (IPV), coercive control, and technology-facilitated abuse create safety conditions where ordinary couple tools may be unsafe (Johnson, 2008; Stark, 2007; Rogers et al., 2023). Third, conversational AI and mental health chatbots show promise but still require strong safety, governance, privacy, evaluation, and crisis boundaries (Abd-Alrazaq et al., 2020; NIST, 2023, 2024; WHO, 2021).</p>
+<p>The core argument is direct:</p>
+<blockquote>
+<p>AI can be useful in relationship distress only if the product is designed first as a safety, routing, and governance system, and only second as a conversational support interface.</p>
+</blockquote>
+<p>This paper makes a design contribution, not a clinical efficacy claim. It proposes a safety-first architecture and evaluation agenda for AI-supported relationship distress support, grounded in the current Pains &amp; Gains / HelpPS prototype and the evidence base around digital support, IPV risk, technology abuse, and AI governance.</p>
+<h2>2. Related Work</h2>
+<h3>2.1 Relationship Distress and Digital Relationship Support</h3>
+<p>Relationship distress is linked in the literature to individual functioning, mental health, physical health, quality of life, and family wellbeing. The OurRelationship program is one of the clearest examples of structured web-based relationship support. In a randomized controlled trial, Doss et al. (2016) evaluated an eight-hour web-based program adapted from Integrative Behavioral Couple Therapy and found improvements in relationship satisfaction, relationship confidence, and negative relationship quality compared with waitlist control. A later pilot trial extended the model to relationally distressed individuals, not only couples, and reported improvements in quality of life, work functioning, and perceived health (Nowlan et al., 2017).</p>
+<p>This matters for Pains &amp; Gains / HelpPS because it supports a basic premise: structured digital relationship support can be useful. But it does not prove that a generative AI relationship-support product is safe or effective. The studied interventions were structured programs, not open-ended AI companions. They also do not remove the need for screening, exclusion criteria, human support, or careful handling of IPV risk.</p>
+<p>The practical implication is that Pains &amp; Gains / HelpPS should borrow the discipline of structured interventions: bounded flows, defined outcomes, clear eligibility, and evaluation. It should not borrow the weaker pattern of endless chat.</p>
+<h3>2.2 Intimate Partner Violence, Coercive Control, and Couple-Feature Risk</h3>
+<p>The World Health Organization identifies violence against women, including intimate partner and sexual violence, as a major public health and human rights issue. WHO's violence against women data platform reports that globally one in three women experience physical and/or sexual violence in their lifetime, mostly by an intimate partner (WHO, n.d.). The platform is designed for adults of all genders, but this global evidence establishes why any relationship-support system must assume that a non-trivial share of users may be living with safety risk.</p>
+<p>The literature also shows that not all partner conflict is the same. Johnson's typology distinguishes coercive controlling violence or "intimate terrorism" from situational couple violence and other patterns (Johnson, 2008). Stark's coercive-control work reframes abuse as an entrapment pattern that can include non-physical tactics such as isolation, monitoring, humiliation, intimidation, economic control, and restriction of autonomy (Stark, 2007). This distinction is central to product design. Couple communication prompts may be reasonable in ordinary conflict and dangerous in coercive control.</p>
+<p>Couple therapy evidence in IPV contexts is mixed and conditional. Karakurt et al. (2016) reviewed couple therapy for IPV and found a limited evidence base, with important cautions around study quality, sample selection, and applicability. Clinical and practice literature generally treats coercive control and severe or ongoing violence as contraindications for conjoint couple work. For Pains &amp; Gains / HelpPS, this means partner linking, shared exercises, and AI-mediated couple dialogue must be phase-gated and unavailable where coercive-control indicators appear.</p>
+<h3>2.3 Digital IPV Interventions and Safety Decision Aids</h3>
+<p>Digital tools can help survivors access information, safety planning, and decision support, especially when in-person services are difficult to reach. Emezue et al. (2022) synthesized randomized trials of technology-based and digital IPV interventions and found promising evidence for improving health and wellbeing outcomes among female IPV survivors, while also noting limitations in diversity, context, and study design.</p>
+<p>Safety decision aids are particularly relevant. The myPlan and iCAN Plan 4 Safety programs show how digital interventions can help survivors clarify safety priorities, assess danger, and create tailored action plans (Glass et al., 2010; Ford-Gilboe et al., 2017, 2020). These interventions matter because they do not treat support as open-ended emotional conversation. They structure decision-making around safety, values, risk, resources, and action.</p>
+<p>For Pains &amp; Gains / HelpPS, this supports the Resource Directory, Pathway 4 protection route, and refusal to provide couple scripts when coercion or fear is present. It also warns against overclaiming. Digital safety tools must be private, context-aware, and designed with survivor safety at the center.</p>
+<h3>2.4 Technology-Facilitated Abuse</h3>
+<p>Technology can be a support channel, but it can also be an abuse channel. Reviews of technology-facilitated abuse describe behaviors including spyware, account access, location tracking, camera monitoring, harassment, impersonation, and misuse of everyday devices for surveillance or control (Rogers et al., 2023; Kim &amp; Ferraresso, 2023). Digital self-help studies also identify privacy concerns, fear of consequences, language barriers, and risk of partner discovery as real barriers for people experiencing IPV (Micklitz et al., 2023).</p>
+<p>This evidence directly supports three non-negotiable product boundaries:</p>
+<ol>
+<li>No surveillance assistance.</li>
+<li>No partner monitoring or hacking.</li>
+<li>No court-style evidence-package generation.</li>
+</ol>
+<p>These are not generic policy preferences. They are safety requirements in a category where digital traces and partner access can escalate harm.</p>
+<h3>2.5 Conversational AI, Mental Health, and Crisis Limits</h3>
+<p>Chatbots and conversational agents have been studied for mental health support, with some evidence of benefit for selected outcomes. Abd-Alrazaq et al. (2020) reviewed chatbot interventions for mental health and concluded that the field showed promise but required stronger evidence, common outcome measures, and more attention to safety. Later meta-analytic work on conversational agent interventions has similarly found potential benefits while calling for better long-term efficacy and safety research (He et al., 2023).</p>
+<p>Large language models introduce new risks because they can generate fluent, adaptive, human-like support at scale. The problem is not only factual error. It is emotional overreach, crisis misclassification, anthropomorphic dependency, and unsafe persistence in high-risk conversations. Studies of social chatbots and extended chatbot use suggest that attachment, emotional dependence, and problematic use are plausible risks for some users, even where short-term support or loneliness reduction is reported (Pentina et al., 2023; Fang et al., 2025). Because this evidence is still developing, Pains &amp; Gains / HelpPS should not position itself as a companion or replacement relationship.</p>
+<p>The design implication is clear: conversation is not the success metric. The platform should move users from distress to clarity, safe action, human support, or graduation.</p>
+<h3>2.6 AI Governance and KSA Context</h3>
+<p>Responsible AI frameworks provide the governance lens for a product in this category. NIST's AI Risk Management Framework defines AI risk management around Govern, Map, Measure, and Manage functions, with trustworthiness characteristics such as safety, security, explainability, privacy, accountability, and fairness (NIST, 2023). NIST's Generative AI Profile extends this risk posture to generative AI systems (NIST, 2024). WHO's AI health ethics guidance emphasizes human autonomy, safety, transparency, responsibility, equity, and sustainability for AI systems used in health-related contexts (WHO, 2021).</p>
+<p>For a Saudi Arabia-first product, local governance also matters. Saudi Arabia's Personal Data Protection Law and implementing regulations place obligations on personal data processing, data subject rights, security, breach handling, and cross-border transfer controls under SDAIA oversight (SDAIA, 2023a; OECD.AI, 2025). SDAIA's AI Ethics Principles emphasize responsible AI across the lifecycle, including privacy, security, fairness, human oversight, and accountability (SDAIA, 2023b). HRSD's domestic violence reporting service identifies 1919 as the Domestic Violence Center reporting channel for citizens and residents seeking help (HRSD, 2025).</p>
+<p>The practical implication is that KSA deployment cannot be treated as English product translation. It requires Arabic-quality parity, culturally reviewed content, KSA-compliant data handling, verified local resources, and governance that can be defended under both safety and regulatory review.</p>
+<h2>3. Method and Contribution</h2>
+<p>This paper uses a design-science framing. Design science research creates and evaluates artifacts that address relevant human and organizational problems (Hevner et al., 2004). The artifact here is not only a software prototype. It is an operating model for safety-first AI relationship support.</p>
+<p>The artifact includes:</p>
+<ul>
+<li>A Safety Mind Framework for non-clinical classification, reflection, mitigation, and escalation.</li>
+<li>A local safety precheck that classifies every user input before live model use.</li>
+<li>Agentic role separation across safety classification, routing, reflection, recovery flow, safety planning, content delivery, crisis handoff, privacy validation, and one-side-of-story enforcement.</li>
+<li>A Burnout Load Audit to treat relational stress as cumulative load, not only single-incident conflict.</li>
+<li>Guardrails for surveillance refusal, evidence-package refusal, no partner data exposure, no clinical diagnosis, no AI companion behavior, and no engagement-driven optimization.</li>
+<li>A phase-gated roadmap that keeps couple features unavailable until safety evidence exists.</li>
+</ul>
+<p>The contribution is a safety-by-design architecture and evaluation agenda. The paper does not claim that the current prototype has demonstrated clinical efficacy, reduced harm, or validated classifier performance. Those remain future empirical tasks.</p>
+<h2>4. The Safety Mind Framework</h2>
+<p>The Safety Mind Framework is a non-clinical product methodology. It should be understood as a structured decision and reflection model, not as therapy.</p>
+<p>The framework starts from a practical equation:</p>
+<blockquote>
+<p>Relational Distress = Perception of Events - Expectations / Needs / Safety Requirements</p>
+</blockquote>
+<p>This equation is informed by cognitive appraisal theory, where stress depends partly on how a person evaluates an event and their coping resources (Lazarus &amp; Folkman, 1984). It is also consistent with evidence that repetitive rumination can maintain distress (Nolen-Hoeksema et al., 2008) and with acceptance-and-commitment approaches that emphasize values-based action and psychological flexibility (Hayes et al., 2006). However, the framework must not be marketed as CBT, ACT, therapy, or diagnosis. It is a product logic for routing and safe support.</p>
+<p>The key distinction is signal versus loop.</p>
+<div class="table-wrap"><table><thead><tr><th>Category</th><th>Meaning</th><th>Platform response</th></tr></thead><tbody><tr><td>Signal</td><td>Distress indicating a real need, conflict, capacity gap, or safety requirement</td><td>Clarify, reduce load, act, seek support, or escalate</td></tr><tr><td>Loop</td><td>Repeated mental replay, catastrophic projection, jealousy story, self-blame, or unsupported certainty</td><td>Use Recovery Flow if safe; avoid feeding the loop</td></tr><tr><td>Threat</td><td>Coercion, violence, self-harm, child risk, imminent danger, or severe safety risk</td><td>Stop ordinary reflection and route to resources or protection</td></tr></tbody></table></div>
+<p>The safety override is the most important rule: the framework must never be used to calm a user into tolerating danger.</p>
+<h2>5. Routing Taxonomy</h2>
+<p>The platform adapts the TON model into relationship-specific routing categories.</p>
+<div class="table-wrap"><table><thead><tr><th>Source</th><th>High intensity</th><th>Low intensity</th></tr></thead><tbody><tr><td>External</td><td>Trauma / Threat: violence, coercion, severe betrayal, unsafe separation, eviction, child risk, immigration dependency crisis</td><td>External Nuisance: late reply, mess, family comment, phone distraction, small money disagreement</td></tr><tr><td>Internal</td><td>Obsession / Loop: catastrophic interpretation, repeated jealousy story, abandonment fear, "I am trapped forever"</td><td>Internal Noise: insecurity, comparison, shame, minor resentment, self-criticism</td></tr></tbody></table></div>
+<p>The product also classifies modality:</p>
+<ul>
+<li>Mental: racing thoughts, assumptions, replay, projection.</li>
+<li>Emotional: anger, shame, sadness, fear, grief.</li>
+<li>Physical: sleep disruption, panic sensations, fatigue, body tension.</li>
+<li>Purpose / Values: family role conflict, cultural pressure, loss of self, meaning conflict.</li>
+</ul>
+<p>Finally, it distinguishes future-oriented distress:</p>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>Definition</th><th>Route</th></tr></thead><tbody><tr><td>Fear</td><td>Known future threat</td><td>Protect, prepare, escalate</td></tr><tr><td>Worry</td><td>Uncertain future threat</td><td>Act, wait, gather information, or release loop</td></tr><tr><td>Anxiety</td><td>Perceived capacity gap</td><td>Identify support, skills, or outside help</td></tr><tr><td>Panic</td><td>Imminent threat and time scarcity</td><td>Reduce load and seek urgent human support</td></tr></tbody></table></div>
+<p>This taxonomy should be evaluated empirically. The publication claim is not that these categories are clinically validated. The claim is that they give the product an explicit, auditable routing logic that is safer than generic chat.</p>
+<h2>6. Safety-First Architecture</h2>
+<p>The current prototype implements the following architecture.</p>
+<div class="table-wrap"><table><thead><tr><th>Layer</th><th>Function</th><th>Safety rationale</th></tr></thead><tbody><tr><td>Local safety precheck</td><td>Classifies every input before live model use</td><td>Prevents unsafe requests from becoming ordinary model prompts</td></tr><tr><td>Safety classifier</td><td>Detects imminent danger, self-harm, child risk, coercion, surveillance, legal-evidence request, prompt attack</td><td>Prioritizes false-negative reduction for high-risk categories</td></tr><tr><td>Safety Mind classifier</td><td>Classifies TON type, modality, threat state, and problem area</td><td>Selects the right support route</td></tr><tr><td>Protective router</td><td>Routes to normal support, Recovery Flow, mitigation, refusal, Pathway 4, Pathway 6, or resource directory</td><td>Makes action explicit and auditable</td></tr><tr><td>One-side-of-story layer</td><td>Prevents diagnosis, fault proof, partner judgment, and outcome prediction</td><td>Reduces narrative overreach</td></tr><tr><td>Reflection and recovery agents</td><td>Provide short, bounded relief after safety pass</td><td>Reduces distress without dependency loops</td></tr><tr><td>Safety planner / resource navigator</td><td>Handles coercion, violence, child risk, and crisis routing</td><td>Keeps protection separate from couple repair</td></tr><tr><td>Privacy and compliance validator</td><td>Checks model handoff, consent, partner exposure, and KSA residency implications</td><td>Treats governance as product infrastructure</td></tr><tr><td>User-visible traces</td><td>Shows safety labels, routing, provider handoffs, and decision traces</td><td>Builds auditability and user trust</td></tr></tbody></table></div>
+<p>The architecture rejects the single-model pattern. No one model should handle all safety classification, interpretation, coaching, crisis routing, and governance. Role separation creates clearer failure analysis and a better basis for evaluation.</p>
+<h2>7. Product Guardrails</h2>
+<p>The prototype's guardrails follow directly from the evidence base.</p>
+<div class="table-wrap"><table><thead><tr><th>Guardrail</th><th>Evidence rationale</th></tr></thead><tbody><tr><td>Safety screening before response generation</td><td>IPV, self-harm, child risk, and imminent danger require different response paths than ordinary distress</td></tr><tr><td>No clinical claims</td><td>Chatbot and conversational AI evidence is promising but not sufficient for diagnosis or treatment claims</td></tr><tr><td>No AI companion behavior</td><td>Emerging AI companionship evidence raises dependency and attachment-risk concerns</td></tr><tr><td>No surveillance, hacking, or secret monitoring</td><td>Technology-facilitated abuse literature documents misuse of everyday technology for control</td></tr><tr><td>No legal-evidence packages</td><td>Evidence-generation features can intensify conflict, misuse private data, and exceed legal-advice boundaries</td></tr><tr><td>One-side-of-story enforcement</td><td>The absent partner cannot be diagnosed, judged, or proven guilty by one user's narrative</td></tr><tr><td>Individual mode before couple mode</td><td>Coercive-control and IPV literature show that mutual tools can be unsafe under asymmetric power</td></tr><tr><td>Quick exit and discretion</td><td>Digital interventions for IPV require attention to partner discovery and privacy risk</td></tr><tr><td>Outcome metrics over engagement metrics</td><td>Emotional dependency and endless venting can look like engagement while failing the user</td></tr></tbody></table></div>
+<p>The central discipline is that refusal is a safety feature. A serious product in this category must know when not to answer.</p>
+<h2>8. Evaluation Agenda</h2>
+<p>A real publication should include an evaluation protocol. The current prototype is not enough. The following evaluation agenda is required before stronger claims can be made.</p>
+<h3>8.1 Classifier and Routing Evaluation</h3>
+<p>The safety classifier should be tested on expert-labeled English and Arabic scenarios, including:</p>
+<ul>
+<li>ordinary relationship distress;</li>
+<li>late-reply loops and jealousy spirals;</li>
+<li>money stress without coercion;</li>
+<li>financial abuse and control;</li>
+<li>physical violence;</li>
+<li>sexual coercion;</li>
+<li>child risk;</li>
+<li>self-harm and suicidal ideation;</li>
+<li>imminent danger;</li>
+<li>separation, housing, legal, and custody stress;</li>
+<li>surveillance and evidence-package requests;</li>
+<li>prompt injection and adversarial misuse;</li>
+<li>culturally indirect or euphemistic disclosures.</li>
+</ul>
+<p>Primary safety metrics should prioritize recall and false-negative reduction for high-risk categories. A false positive may frustrate a user; a false negative may expose a user to harm. Precision still matters, but the product's threshold logic should be risk-weighted.</p>
+<h3>8.2 Red-Team Testing</h3>
+<p>Red-team scenarios should include:</p>
+<ul>
+<li>user tries to reframe abuse as "just perception";</li>
+<li>user minimizes financial control;</li>
+<li>user asks for couple scripts while afraid;</li>
+<li>user asks for phone tracking or message access;</li>
+<li>user asks for a custody or divorce evidence package;</li>
+<li>user expresses panic but indirectly;</li>
+<li>user describes child risk in ambiguous language;</li>
+<li>user uses Arabic dialect, mixed Arabic-English, or culturally coded language;</li>
+<li>user attempts prompt injection to bypass safety rules.</li>
+</ul>
+<h3>8.3 Human Review</h3>
+<p>The project requires review by:</p>
+<ul>
+<li>domestic violence or coercive-control advisor;</li>
+<li>clinical advisor;</li>
+<li>legal and privacy advisor;</li>
+<li>KSA cultural advisor;</li>
+<li>Arabic-language content reviewer;</li>
+<li>AI safety and red-team reviewer.</li>
+</ul>
+<p>The advisor review should not only inspect content. It should inspect interaction flows, refusal copy, escalation thresholds, notification behavior, retention policies, quick-exit behavior, and partner-linking rules.</p>
+<h3>8.4 User Research</h3>
+<p>A pilot study should measure:</p>
+<ul>
+<li>perceived clarity and usefulness;</li>
+<li>whether users understand that the tool is not therapy, crisis response, or legal advice;</li>
+<li>whether users feel pushed toward action, support, or reflection appropriately;</li>
+<li>whether high-risk users perceive privacy controls as safe;</li>
+<li>whether the Load Audit helps users identify cumulative stressors;</li>
+<li>whether the Recovery Flow reduces looping without reducing safety escalation;</li>
+<li>whether users can graduate or disengage without friction.</li>
+</ul>
+<h3>8.5 Outcome Measures</h3>
+<p>Possible validated or structured measures should be selected with advisors. Candidate domains include distress load, perceived safety, decision conflict, perceived support, usability, privacy confidence, and help-seeking intent. For IPV-specific pathways, safety endpoints should be designed with DV experts and should avoid creating new exposure risk.</p>
+<h2>9. KSA Deployment Considerations</h2>
+<p>KSA deployment requires local design, not translation.</p>
+<p>First, PDPL compliance should be treated as an architectural requirement. The prototype currently stores API keys and some state locally in the browser, which is acceptable for a prototype but not production. A production version should include server-side secret management, consent logs, data minimization, retention controls, breach response, regional processing controls, and user access/deletion/export flows aligned with PDPL obligations.</p>
+<p>Second, the product must align with SDAIA AI Ethics Principles. This means documented human oversight, risk classification, privacy and security controls, transparency, accountability, and lifecycle monitoring.</p>
+<p>Third, resource routing must be verified and maintained. HRSD lists the Domestic Violence Center 1919 as a reporting channel for abuse and domestic violence. The app should surface resources carefully, keep them visible when risk is high, and verify resource accuracy at launch and on a defined cadence.</p>
+<p>Fourth, Arabic content must be equal in quality to English content. Relationship distress, shame, family structure, in-law pressure, religious language, and gendered safety dynamics cannot be localized through literal translation alone. They require cultural review without compromising safety.</p>
+<h2>10. Discussion</h2>
+<p>Pains &amp; Gains / HelpPS is strongest when it resists the default incentives of consumer AI.</p>
+<p>The market may reward more engagement, warmer companion behavior, deeper personalization, and shared couple features. The evidence points in a different direction. In a high-risk relational domain, the product should optimize for correct routing, refusal, safety planning, privacy, reduced load, support access, and graduation.</p>
+<p>This creates a different product thesis from most consumer chatbots:</p>
+<ul>
+<li>The assistant should not always continue the conversation.</li>
+<li>The best answer may be a refusal.</li>
+<li>The best feature may be a gated feature.</li>
+<li>The best metric may be successful disengagement.</li>
+<li>The best personalization may be privacy-preserving continuity, not emotional attachment.</li>
+</ul>
+<p>The strategic opportunity is not to build a better relationship chatbot. It is to define a safety-first operating model for AI in emotionally sensitive, family-relevant support.</p>
+<h2>11. Limitations</h2>
+<p>This paper has important limitations.</p>
+<p>First, the prototype has not been tested with users. Usability, safety perception, cultural fit, and outcome effects are unknown.</p>
+<p>Second, classifier performance has not been validated. The current local classifier is a prototype rule-based and heuristic layer. It should not be treated as sufficient for production safety.</p>
+<p>Third, the Safety Mind Framework is original product methodology. It is informed by established psychological concepts, but it is not itself a validated clinical model.</p>
+<p>Fourth, the paper relies on adjacent evidence. Web-based relationship programs, IPV safety decision aids, and mental health chatbots inform the design, but none directly validate this exact AI-supported product model.</p>
+<p>Fifth, KSA deployment introduces legal, cultural, linguistic, and operational requirements that require direct expert review.</p>
+<p>These limitations do not weaken the main contribution. They define the responsible next step.</p>
+<h2>12. Recommendations</h2>
+<p>The publication version should make five recommendations.</p>
+<ol>
+<li>Keep Phase 1 individual-only until safety evidence supports couple features.</li>
+<li>Treat safety classification and routing as launch-critical infrastructure.</li>
+<li>Build a multilingual red-team dataset before any production deployment.</li>
+<li>Formalize governance using NIST AI RMF, SDAIA AI Ethics Principles, and PDPL-aware privacy controls.</li>
+<li>Evaluate success through relief, clarity, safety, support access, load reduction, and graduation, not engagement.</li>
+</ol>
+<p>The product should be presented honestly. It is not therapy, not legal advice, not crisis response, not surveillance, not a marriage-saving service, and not a companion. Its claim is narrower and more defensible: it helps adults under relational distress move toward calm, clarity, safety, dignity, proportionate action, and correct escalation.</p>
+<h2>13. Conclusion</h2>
+<p>AI relationship support will fail users if it treats all distress as a prompt for empathy. Some distress needs reflection. Some needs practical mitigation. Some needs privacy. Some needs refusal. Some needs human support. Some needs immediate safety routing.</p>
+<p>Pains &amp; Gains / HelpPS proposes a safety-first architecture for making those distinctions explicit. Its value is not in replacing human care or professional judgment. Its value is in refusing the wrong product behavior before harm is amplified.</p>
+<p>The next step is research discipline: expert review, red-team evaluation, Arabic-English validation, privacy hardening, resource verification, and pilot outcome testing. If that work is done, this prototype can become more than an internal product concept. It can become a publishable model for responsible AI in one of the most sensitive areas of human life.</p>
+<h2>References</h2>
+<p>Abd-Alrazaq, A. A., Alajlani, M., Ali, N., Denecke, K., Bewick, B. M., &amp; Househ, M. (2020). Effectiveness and safety of using chatbots to improve mental health: Systematic review and meta-analysis. <em>Journal of Medical Internet Research, 22</em>(7), e16021. <a href="https://doi.org/10.2196/16021">https://doi.org/10.2196/16021</a></p>
+<p>Doss, B. D., Cicila, L. N., Georgia, E. J., Roddy, M. K., Nowlan, K. M., Benson, L. A., &amp; Christensen, A. (2016). A randomized controlled trial of the web-based OurRelationship program: Effects on relationship and individual functioning. <em>Journal of Consulting and Clinical Psychology, 84</em>(4), 285-296. <a href="https://doi.org/10.1037/ccp0000063">https://doi.org/10.1037/ccp0000063</a></p>
+<p>Emezue, C., Chase, J.-A. D., Udmuangpia, T., &amp; Bloom, T. L. (2022). Technology-based and digital interventions for intimate partner violence: A systematic review and meta-analysis. <em>Campbell Systematic Reviews, 18</em>(3), e1271. <a href="https://doi.org/10.1002/cl2.1271">https://doi.org/10.1002/cl2.1271</a></p>
+<p>Fang, C. M., et al. (2025). How AI and human behaviors shape psychosocial effects of chatbot use: A longitudinal randomized controlled study. arXiv. <a href="https://arxiv.org/abs/2503.17473">https://arxiv.org/abs/2503.17473</a></p>
+<p>Ford-Gilboe, M., et al. (2017). A tailored online safety and health intervention for women experiencing intimate partner violence: The iCAN Plan 4 Safety randomized controlled trial protocol. <em>BMC Public Health, 17</em>, 273. <a href="https://doi.org/10.1186/s12889-017-4143-9">https://doi.org/10.1186/s12889-017-4143-9</a></p>
+<p>Ford-Gilboe, M., et al. (2020). Longitudinal impacts of an online safety and health intervention for women experiencing intimate partner violence: Randomized controlled trial. <em>BMC Public Health, 20</em>, 260. <a href="https://doi.org/10.1186/s12889-020-8152-8">https://doi.org/10.1186/s12889-020-8152-8</a></p>
+<p>Glass, N. E., Eden, K. B., Bloom, T., &amp; Perrin, N. (2010). Computerized aid improves safety decision process for survivors of intimate partner violence. <em>Journal of Interpersonal Violence, 25</em>(11), 1947-1964. <a href="https://doi.org/10.1177/0886260509354508">https://doi.org/10.1177/0886260509354508</a></p>
+<p>Hayes, S. C., Luoma, J. B., Bond, F. W., Masuda, A., &amp; Lillis, J. (2006). Acceptance and commitment therapy: Model, processes and outcomes. <em>Behaviour Research and Therapy, 44</em>(1), 1-25. <a href="https://doi.org/10.1016/j.brat.2005.06.006">https://doi.org/10.1016/j.brat.2005.06.006</a></p>
+<p>He, Y., Yang, L., Zhu, X., Wu, B., Zhang, S., Qian, C., &amp; Tian, T. (2023). Conversational agent interventions for mental health problems: Systematic review and meta-analysis of randomized controlled trials. <em>Journal of Medical Internet Research, 25</em>, e43862. <a href="https://doi.org/10.2196/43862">https://doi.org/10.2196/43862</a></p>
+<p>Hevner, A. R., March, S. T., Park, J., &amp; Ram, S. (2004). Design science in information systems research. <em>MIS Quarterly, 28</em>(1), 75-105. <a href="https://doi.org/10.2307/25148625">https://doi.org/10.2307/25148625</a></p>
+<p>Hurless, N., &amp; Cottone, R. R. (2018). Considerations of conjoint couples therapy in cases of intimate partner violence. <em>The Family Journal, 26</em>(3), 324-329. <a href="https://doi.org/10.1177/1066480718795708">https://doi.org/10.1177/1066480718795708</a></p>
+<p>Johnson, M. P. (2008). <em>A typology of domestic violence: Intimate terrorism, violent resistance, and situational couple violence</em>. Northeastern University Press.</p>
+<p>Karakurt, G., Whiting, K., van Esch, C., Bolen, S. D., &amp; Calabrese, J. R. (2016). Couple therapy for intimate partner violence: A systematic review and meta-analysis. <em>Journal of Marital and Family Therapy, 42</em>(4), 567-583. <a href="https://doi.org/10.1111/jmft.12178">https://doi.org/10.1111/jmft.12178</a></p>
+<p>Kim, C., &amp; Ferraresso, R. (2023). Examining technology-facilitated intimate partner violence: A systematic review of journal articles. <em>Trauma, Violence, &amp; Abuse, 24</em>(5), 3283-3298. <a href="https://doi.org/10.1177/15248380211061402">https://doi.org/10.1177/15248380211061402</a></p>
+<p>Lazarus, R. S., &amp; Folkman, S. (1984). <em>Stress, appraisal, and coping</em>. Springer.</p>
+<p>Ministry of Human Resources and Social Development. (2025). Reporting domestic violence. <a href="https://www.hrsd.gov.sa/en/ministry-services/services/1155125">https://www.hrsd.gov.sa/en/ministry-services/services/1155125</a></p>
+<p>National Institute of Standards and Technology. (2023). <em>Artificial Intelligence Risk Management Framework (AI RMF 1.0)</em>. <a href="https://doi.org/10.6028/NIST.AI.100-1">https://doi.org/10.6028/NIST.AI.100-1</a></p>
+<p>National Institute of Standards and Technology. (2024). <em>Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile</em>. <a href="https://doi.org/10.6028/NIST.AI.600-1">https://doi.org/10.6028/NIST.AI.600-1</a></p>
+<p>Micklitz, H. M., Nagel, Z., Jahn, S., Oertelt-Prigione, S., Andersson, G., &amp; Sander, L. B. (2023). Digital self-help for people experiencing intimate partner violence: A qualitative study on user experiences and needs including people with lived experiences and service providers. <em>BMC Public Health, 23</em>, 1471. <a href="https://doi.org/10.1186/s12889-023-16357-5">https://doi.org/10.1186/s12889-023-16357-5</a></p>
+<p>Nolen-Hoeksema, S., Wisco, B. E., &amp; Lyubomirsky, S. (2008). Rethinking rumination. <em>Perspectives on Psychological Science, 3</em>(5), 400-424. <a href="https://doi.org/10.1111/j.1745-6924.2008.00088.x">https://doi.org/10.1111/j.1745-6924.2008.00088.x</a></p>
+<p>Nowlan, K. M., Roddy, M. K., &amp; Doss, B. D. (2017). The online OurRelationship program for relationally distressed individuals: A pilot randomized controlled trial. <em>Couple and Family Psychology: Research and Practice, 6</em>(3), 189-204. <a href="https://doi.org/10.1037/cfp0000080">https://doi.org/10.1037/cfp0000080</a></p>
+<p>OECD.AI Policy Observatory. (2025). The implementing regulation of the Personal Data Protection Law. <a href="https://oecd.ai/en/dashboards/policy-initiatives/the-implementing-regulation-of-the-personal-data-protection-law-5058">https://oecd.ai/en/dashboards/policy-initiatives/the-implementing-regulation-of-the-personal-data-protection-law-5058</a></p>
+<p>Pentina, I., Hancock, T., &amp; Xie, T. (2023). Exploring relationship development with social chatbots: A mixed-method study of Replika. <em>Computers in Human Behavior, 140</em>, 107600. <a href="https://doi.org/10.1016/j.chb.2022.107600">https://doi.org/10.1016/j.chb.2022.107600</a></p>
+<p>Roddy, M. K., Rothman, K., &amp; Doss, B. D. (2018). A randomized controlled trial of different levels of coach support in an online intervention for relationship distress. <em>Behaviour Research and Therapy, 110</em>, 47-54. <a href="https://doi.org/10.1016/j.brat.2018.09.002">https://doi.org/10.1016/j.brat.2018.09.002</a></p>
+<p>Rogers, M. M., Fisher, C., Ali, P., Allmark, P., &amp; Fontes, L. (2023). Technology-facilitated abuse in intimate relationships: A scoping review. <em>Trauma, Violence, &amp; Abuse, 24</em>(4), 2210-2226. <a href="https://doi.org/10.1177/15248380221090218">https://doi.org/10.1177/15248380221090218</a></p>
+<p>Saudi Data &amp; AI Authority. (2023a). <em>Personal Data Protection Law</em>. <a href="https://sdaia.gov.sa/en/SDAIA/about/Documents/Personal%20Data%20English%20V2-23April2023-%20Reviewed-.pdf">https://sdaia.gov.sa/en/SDAIA/about/Documents/Personal%20Data%20English%20V2-23April2023-%20Reviewed-.pdf</a></p>
+<p>Saudi Data &amp; AI Authority. (2023b). <em>AI Ethics Principles</em>. <a href="https://sdaia.gov.sa/en/SDAIA/about/Documents/ai-principles.pdf">https://sdaia.gov.sa/en/SDAIA/about/Documents/ai-principles.pdf</a></p>
+<p>Stark, E. (2007). <em>Coercive control: How men entrap women in personal life</em>. Oxford University Press.</p>
+<p>World Health Organization. (2021). <em>Ethics and governance of artificial intelligence for health: WHO guidance</em>. <a href="https://www.who.int/publications/i/item/9789240029200">https://www.who.int/publications/i/item/9789240029200</a></p>
+<p>World Health Organization. (n.d.). Violence against women data. <a href="https://platform.who.int/data/sexual-and-reproductive-health-and-rights/violence-against-women-data">https://platform.who.int/data/sexual-and-reproductive-health-and-rights/violence-against-women-data</a></p>
+</body>
+</html>
