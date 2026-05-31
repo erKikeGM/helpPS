@@ -1,5 +1,11 @@
 # Pains & Gains / HelpPS: A Safety-First Architecture for AI-Supported Relationship Distress, Protection, and Practical Relief
 
+**Author:** Enrique Gomicia
+
+**Affiliation:** Pains & Gains / HelpPS Project
+
+**Date:** May 2026
+
 ## Abstract
 
 AI relationship-support products are entering a category where emotional distress, coercive control, privacy, crisis risk, legal exposure, and family wellbeing can appear in the same conversation. The central design problem is not how to make an assistant more empathetic. It is how to prevent a system from giving ordinary coaching when the safer response is refusal, privacy protection, safety planning, professional support, or crisis handoff.
